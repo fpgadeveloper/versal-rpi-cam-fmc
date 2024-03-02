@@ -10,9 +10,12 @@ proc help_proc { } {
   puts "-help              this text"
 }
 
+# Increase timeout to avoid sporadic errors
+configparams vitis-launch-timeout 400
+
 # Set defaults
 set platform "default"
-set proc "psu_cortexa53"
+set proc "psv_cortexa72"
 
 # Parse arguments
 for { set i 0 } { $i < $argc } { incr i } {
@@ -65,7 +68,7 @@ domain create \
 	-proc $proc
 
 # Configure domain
-domain config -sd-dir $imagedir
+domain config -image $imagedir
 domain config -boot $bootdir
 domain config -bif $biffile
 

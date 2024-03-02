@@ -12,6 +12,9 @@ GET_PART_JOU = vivado_$(TARGET).jou
 
 # valid targets
 vck190_fmcp1_target := xilinx.com vck190
+vck190_fmcp2_target := xilinx.com vck190
+vmk180_fmcp1_target := xilinx.com vmk180
+vmk180_fmcp2_target := xilinx.com vmk180
 
 TARGET_LIST := $(sort $(patsubst %_target,%,$(filter %_target,$(.VARIABLES))))
 

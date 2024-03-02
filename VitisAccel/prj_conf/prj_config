@@ -22,7 +22,7 @@ freqHz=150000000:v_multi_scaler_1.ap_clk
 [connectivity]
 
 nk=v_multi_scaler:1:v_multi_scaler_1
-sp=v_multi_scaler_1.m_axi_mm_video:NOC_S13
+sp=v_multi_scaler_1.m_axi_mm_video:NOC_S14
 
 [advanced]
 misc=:solution_name=link
@@ -37,4 +37,5 @@ prop=run.impl_1.STEPS.PLACE_DESIGN.ARGS.DIRECTIVE=Explore
 prop=run.impl_1.STEPS.PHYS_OPT_DESIGN.IS_ENABLED=true
 prop=run.impl_1.STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE=AggressiveExplore
 prop=run.impl_1.STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE=AggressiveExplore
+prop=run.impl_1.GEN_FULL_BITSTREAM=1
 

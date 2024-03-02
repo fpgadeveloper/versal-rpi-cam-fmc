@@ -462,7 +462,7 @@ connect_bd_intf_net [get_bd_intf_pins versal_cips_0/M_AXI_LPD] [get_bd_intf_pins
 create_bd_cell -type ip -vlnv xilinx.com:ip:axi_vip axi_vip_0
 set_property -dict [list CONFIG.INTERFACE_MODE {SLAVE}] [get_bd_cells axi_vip_0]
 connect_bd_net [get_bd_pins clk_wiz_0/clk_150M] [get_bd_pins axi_vip_0/aclk]
-connect_bd_net [get_bd_pins reset_100M/interconnect_aresetn] [get_bd_pins axi_vip_0/aresetn]
+connect_bd_net [get_bd_pins reset_150M/interconnect_aresetn] [get_bd_pins axi_vip_0/aresetn]
 connect_bd_intf_net [get_bd_intf_pins axi_smc_lpd/M00_AXI] [get_bd_intf_pins axi_vip_0/S_AXI]
 
 # Add AXI Interrupt controller
@@ -1536,7 +1536,7 @@ set param_list {}
 for {set i $n_ports} {$i <= 21} {incr i} {
   set paddedIndex [format "%02d" $i]
   lappend param_list "S${paddedIndex}_AXI"
-  lappend param_list {memport "MIG" sptag "" memory "" is_range "true"}
+  lappend param_list [list memport "MIG" sptag "NOC_S${paddedIndex}" memory "" is_range "true"]
 }
 set_property PFM.AXI_PORT $param_list [get_bd_cells /axi_noc_0]
 

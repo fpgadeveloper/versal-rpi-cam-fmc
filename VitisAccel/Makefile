@@ -6,8 +6,6 @@ DIR_PRJ = $(shell pwd)
 RM = rm -rf
 VIVADO_ROOT := $(XILINX_VIVADO)
 VIVADO:=${VIVADO_ROOT}/bin/vivado
-XBU = xclbinutil
-XBU_FLAGS = --remove-section BITSTREAM --force
 XSCT = $(XILINX_VITIS)/bin/xsct
 BD_NAME = rpi
 
@@ -46,10 +44,12 @@ PFM_FILE = $(DIR_PRJ)/$(PFM_WORKSPACE)/$(TARGET)/export/$(TARGET)/$(TARGET).xpfm
 
 # Outputs
 CONTAINER_DIR = $(TARGET)_container
+XSA_FILE = $(CONTAINER_DIR)/binary_container_1.xsa
 XCLBIN_FILE = $(CONTAINER_DIR)/dpu.xclbin
 LOGS_DIR = $(CONTAINER_DIR)/logs
+REPORTS_DIR = $(CONTAINER_DIR)/reports
 IP_CACHE_DIR = $(CONTAINER_DIR)/ip_cache
-SD_CARD_DIR = $(CONTAINER_DIR)/sd_card
+PKG_OUT_DIR = $(CONTAINER_DIR)/package_out
 
 # Project config
 PRJ_CFG_FILE = $(word 2,$($(TARGET)_target))
@@ -87,7 +87,10 @@ help::
 # # v++ flags
 VPP ?= v++
 
-XOCC_OPTS = -t ${TARGET_OPT} --platform ${PFM_FILE} --save-temps --config ${DIR_PRJ}/prj_conf/${PRJ_CFG_FILE} --xp param:compiler.userPostSysLinkOverlayTcl=${DIR_PRJ}/prj_conf/strip_interconnects.tcl
+XOCC_OPTS += -t ${TARGET_OPT} --platform ${PFM_FILE} --save-temps --config ${DIR_PRJ}/prj_conf/${PRJ_CFG_FILE}
+XOCC_OPTS += --temp_dir $(CONTAINER_DIR) --remote_ip_cache $(IP_CACHE_DIR)
+XOCC_OPTS += --log_dir $(LOGS_DIR)
+XOCC_OPTS += --report_dir $(REPORTS_DIR)
 
 .PHONY: all xclbin clean package
 
@@ -98,12 +101,18 @@ all:
 	done; \
 	}
 
-xclbin: check_target $(XCLBIN_FILE) package
+#Link kernel and AIE graph with Platform
+$(XSA_FILE): $(KERNEL_XO)
+	@mkdir -p $(@D)
+	@$(VPP) $(XOCC_OPTS) -l -o "$@" $(KERNEL_XO)
+	
+xclbin: check_target $(XCLBIN_FILE)
 
-$(XCLBIN_FILE): $(KERNEL_XO)
-	$(VPP) $(XOCC_OPTS) -l --temp_dir $(CONTAINER_DIR) --log_dir $(LOGS_DIR) --remote_ip_cache $(IP_CACHE_DIR) -o "$@" $(+)
-	$(XBU) $(XBU_FLAGS) --input $@ --output strip.xclbin
-	@mv strip.xclbin $@
+$(XCLBIN_FILE): $(XSA_FILE)
+	$(VPP) -t $(TARGET_OPT) --platform $(PFM_FILE) --save-temps --temp_dir $(CONTAINER_DIR) -p $(XSA_FILE) -o "$@" \
+	  --package.out_dir $(PKG_OUT_DIR) \
+	  --package.boot_mode sd \
+	  --package.no_image
 
 .PHONY: kernel
 kernel: $(KERNEL_XO)
@@ -115,12 +124,6 @@ $(PFM_FILE): $(VIV_XSA)
 
 $(VIV_XSA):
 	$(MAKE) -C $(VIV_DIR) xsa TARGET=$(TARGET) JOBS=$(JOBS)
-
-package:
-	-@mkdir -p $(SD_CARD_DIR)
-	cp $(CONTAINER_DIR)/link/vivado/vpl/prj/prj*/sources_1/bd/*/hw_handoff/*.hwh $(SD_CARD_DIR)
-	cp $(CONTAINER_DIR)/link/vivado/vpl/prj/prj.runs/impl_1/*.bit $(SD_CARD_DIR)
-	cp $(CONTAINER_DIR)/*.xclbin $(SD_CARD_DIR)
 
 .PHONY: clean
 clean: check_target

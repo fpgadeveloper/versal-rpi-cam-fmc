@@ -1,6 +1,6 @@
 *.log
 *.jou
-Vivado/.Xil/
+.Xil/
 Vivado/*.str
 Vivado/vck190_*/
 Vivado/vmk180_*/
@@ -13,6 +13,7 @@ bootimages/
 PetaLinux/offline.txt
 VitisAccel/*_workspace/
 VitisAccel/*_container/
+VitisAccel/sample_link.ini
 VitisAccel/kernels/build/
 Vivado/ip/build/
 
